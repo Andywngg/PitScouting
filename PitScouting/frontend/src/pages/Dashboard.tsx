@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Table from '../components/Table';
 import Button from '../components/Button';
 import toast from 'react-hot-toast';
 import endpoints from '../config/api';
@@ -40,13 +39,6 @@ const Dashboard = () => {
   const [filterTeleopPreference, setFilterTeleopPreference] = useState('');
   const [teams, setTeams] = useState<ScoutingData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    teamNumber: '',
-    drivetrain: '',
-    autoCapabilities: '',
-    endgameType: '',
-    teleopCapability: ''
-  });
 
   useEffect(() => {
     const fetchTeams = async () => {

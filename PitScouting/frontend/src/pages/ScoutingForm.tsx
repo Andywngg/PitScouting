@@ -10,7 +10,6 @@ import { motion } from 'framer-motion';
 import endpoints from '../config/api';
 import { FormikHelpers } from 'formik';
 import { useNavigate } from 'react-router-dom';
-import { teamService } from '../services/api';
 
 interface ScoutingFormValues {
   teamNumber: string;
