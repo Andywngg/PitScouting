@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: pit-scouting-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    buildCommand: npm install && npm run build
+    preDeployCommand: npm run migrate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Team 1334 Admin
+      - key: ADMIN_TEAM_NUMBER
+        value: "1334"
