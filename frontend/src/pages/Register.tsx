@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import FormField from '../components/FormField';
 import Button from '../components/Button';
+import endpoints from '../config/api';
 
 const RegisterSchema = Yup.object().shape({
   name: Yup.string()
@@ -52,7 +53,10 @@ const Register = () => {
           validationSchema={RegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const response = await axios.post('http://localhost:5001/api/auth/register', values);
+              const response = await axios.post(endpoints.auth.register, {
+                ...values,
+                teamNumber: Number(values.teamNumber),
+              });
               console.log('Registration successful:', response.data);
               navigate('/login');
             } catch (error: any) {
