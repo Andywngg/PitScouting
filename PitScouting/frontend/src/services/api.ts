@@ -21,20 +21,24 @@ api.interceptors.request.use((config) => {
 
 export interface TeamData {
   teamNumber: number;
-  autoScoreCoral: boolean;
-  autoScoreAlgae: boolean;
+  autoCanScoreBalls: boolean;
+  estimatedTotalPoints: number | null;
+  pointContributionPercent: number | null;
+  ballsPerCycle: number | null;
+  cyclesPerMatch: number | null;
+  maxBallCapacity: number | null;
+  shootingTypes: string[];
+  shootingLocationType: 'single' | 'multiple';
+  shootingLocationNotes: string | null;
   mustStartSpecificPosition: boolean;
   autoStartingPosition: string;
-  teleopDealgifying: boolean;
-  teleopPreference: string;
-  scoringPreference: string;
-  coralLevels: string[];
   endgameType: string;
   robotWidth: number;
   robotLength: number;
   robotHeight: number;
   robotWeight: number;
   drivetrainType: string;
+  notes: string;
   imageUrl: string | null;
 }
 
