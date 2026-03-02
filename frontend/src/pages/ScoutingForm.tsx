@@ -188,9 +188,6 @@ const ScoutingForm = () => {
         >
           <p className="text-xs uppercase tracking-[0.35em] text-rose-300">Team 1334</p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-amber-50 sm:text-5xl">Pit Scouting 2026</h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-300">
-            Updated for ball-based scoring. Capture point output, cycle speed, capacity, and shooting profile.
-          </p>
         </motion.header>
 
         <Formik<ScoutingFormValues>
@@ -222,7 +219,7 @@ const ScoutingForm = () => {
         >
           {({ values, errors, touched, setFieldValue, isSubmitting }) => (
             <Form className="space-y-6">
-              <Section title="Team" subtitle="Start with the team number for this pit interview." delay={0.05}>
+              <Section title="Team" delay={0.05}>
                 <div>
                   <label htmlFor="teamNumber" className={labelClasses}>
                     Team Number
@@ -244,7 +241,6 @@ const ScoutingForm = () => {
 
               <Section
                 title="Scoring Output"
-                subtitle="Use event observations to estimate total points and percent share."
                 delay={0.1}
               >
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -298,7 +294,7 @@ const ScoutingForm = () => {
                 </div>
               </Section>
 
-              <Section title="Cycle and Capacity" subtitle="Capture throughput and storage limits." delay={0.15}>
+              <Section title="Cycle and Capacity" delay={0.15}>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <label htmlFor="ballsPerCycle" className={labelClasses}>
@@ -349,7 +345,6 @@ const ScoutingForm = () => {
 
               <Section
                 title="Shooting Profile"
-                subtitle="Track shot style and whether they need one fixed spot or can score from multiple locations."
                 delay={0.2}
               >
                 <div>
@@ -627,7 +622,7 @@ const ScoutingForm = () => {
                     value={values.notes}
                     onChange={(event) => setFieldValue('notes', event.target.value)}
                     className={inputClasses}
-                    placeholder="Driver comments, reliability notes, alliance fit..."
+                    placeholder="Comments..."
                   />
                 </div>
               </Section>
