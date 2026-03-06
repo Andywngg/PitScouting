@@ -3,13 +3,17 @@ import { Model, DataTypes, Sequelize } from 'sequelize';
 class Team extends Model {
   public id!: number;
   public teamNumber!: number;
-  public autoScoreCoral!: boolean;
-  public autoScoreAlgae!: boolean;
+  public scouterName!: string | null;
+  public autoCanScoreBalls!: boolean;
+  public estimatedTotalPoints!: number | null;
+  public pointContributionPercent!: number | null;
+  public ballsPerCycle!: number | null;
+  public cyclesPerMatch!: number | null;
+  public maxBallCapacity!: number | null;
+  public shootingTypes!: string[];
+  public shootingLocationType!: string;
+  public shootingLocationNotes!: string | null;
   public autoStartingPosition!: string;
-  public teleopDealgifying!: boolean;
-  public teleopPreference!: string;
-  public scoringPreference!: string;
-  public coralLevels!: string[];
   public endgameType!: string;
   public robotWidth!: number;
   public robotLength!: number;
@@ -32,54 +36,71 @@ class Team extends Model {
         allowNull: false,
         unique: true,
       },
-      autoScoreCoral: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      autoScoreAlgae: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      autoStartingPosition: {
+      scouterName: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      teleopDealgifying: {
+      autoCanScoreBalls: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      teleopPreference: {
-        type: DataTypes.STRING,
+      estimatedTotalPoints: {
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
-      scoringPreference: {
-        type: DataTypes.STRING,
+      pointContributionPercent: {
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
-      coralLevels: {
+      ballsPerCycle: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      cyclesPerMatch: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      maxBallCapacity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      shootingTypes: {
         type: DataTypes.ARRAY(DataTypes.STRING),
         defaultValue: [],
         get() {
-          const rawValue = this.getDataValue('coralLevels');
+          const rawValue = this.getDataValue('shootingTypes');
           return rawValue ? rawValue : [];
         },
         set(value: any) {
           if (typeof value === 'string') {
             try {
-              this.setDataValue('coralLevels', JSON.parse(value));
+              this.setDataValue('shootingTypes', JSON.parse(value));
             } catch {
-              this.setDataValue('coralLevels', []);
+              this.setDataValue('shootingTypes', []);
             }
           } else if (Array.isArray(value)) {
-            this.setDataValue('coralLevels', value);
+            this.setDataValue('shootingTypes', value);
           } else {
-            this.setDataValue('coralLevels', []);
+            this.setDataValue('shootingTypes', []);
           }
-        }
+        },
+      },
+      shootingLocationType: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'single',
+      },
+      shootingLocationNotes: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      autoStartingPosition: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       endgameType: {
         type: DataTypes.STRING,
-        defaultValue: 'none',
+        defaultValue: 'NA',
       },
       robotWidth: {
         type: DataTypes.FLOAT,

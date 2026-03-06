@@ -12,6 +12,7 @@ import clsx from 'clsx';
 
 interface ScoutingFormValues {
   teamNumber: string;
+  scouterName: string;
   autoCanScoreBalls: boolean;
   mustStartSpecificPosition: boolean;
   autoStartingPosition: string;
@@ -54,12 +55,17 @@ const ScoutingSchema = Yup.object().shape({
     otherwise: (schema) => schema.nullable(),
   }),
   estimatedTotalPoints: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
-  pointContributionPercent: Yup.string().oneOf(['', '10', '20', '30', '40']),
+  pointContributionPercent: Yup.string().oneOf(['', '10', '20', '30', '40', '50', '60']),
   ballsPerCycle: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
   cyclesPerMatch: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
   maxBallCapacity: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
   shootingTypes: Yup.array().of(Yup.string()),
   shootingLocationType: Yup.mixed<'single' | 'multiple'>().oneOf(['single', 'multiple']).required(),
+  shootingLocationNotes: Yup.string().when('shootingLocationType', {
+    is: 'single',
+    then: (schema) => schema.required('One-spot location note is required'),
+    otherwise: (schema) => schema.nullable(),
+  }),
   robotWidth: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
   robotLength: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
   robotHeight: Yup.number().nullable().transform(toNullableNumber).min(0, 'Must be 0 or higher'),
@@ -71,19 +77,17 @@ const sectionAnimation = {
   visible: { opacity: 1, y: 0 },
 };
 
-const percentOptions = [10, 20, 30, 40];
+const percentOptions = [10, 20, 30, 40, 50, 60];
 const shootingOptions = [
-  { value: 'high_goal', label: 'High Goal' },
-  { value: 'low_goal', label: 'Low Goal' },
-  { value: 'fender_close', label: 'Close/Fender Shot' },
-  { value: 'long_range', label: 'Long Range Shot' },
+  { value: 'turret', label: 'Turret' },
+  { value: 'fixed', label: 'Fixed' },
 ];
 
 const endgameOptions = [
-  { value: '', label: 'Unknown / Not Observed' },
-  { value: 'high', label: 'High Endgame' },
-  { value: 'low', label: 'Low Endgame' },
-  { value: 'none', label: 'No Endgame Action' },
+  { value: 'NA', label: 'NA' },
+  { value: 'L1', label: 'L1' },
+  { value: 'L2', label: 'L2' },
+  { value: 'L3', label: 'L3' },
 ];
 
 const drivetrainOptions = [
@@ -193,6 +197,7 @@ const ScoutingForm = () => {
         <Formik<ScoutingFormValues>
           initialValues={{
             teamNumber: '',
+            scouterName: '',
             autoCanScoreBalls: false,
             mustStartSpecificPosition: false,
             autoStartingPosition: '',
@@ -220,22 +225,38 @@ const ScoutingForm = () => {
           {({ values, errors, touched, setFieldValue, isSubmitting }) => (
             <Form className="space-y-6">
               <Section title="Team" delay={0.05}>
-                <div>
-                  <label htmlFor="teamNumber" className={labelClasses}>
-                    Team Number
-                  </label>
-                  <input
-                    id="teamNumber"
-                    name="teamNumber"
-                    type="number"
-                    value={values.teamNumber}
-                    onChange={(event) => setFieldValue('teamNumber', event.target.value)}
-                    className={inputClasses}
-                    placeholder="e.g. 1334"
-                  />
-                  {touched.teamNumber && errors.teamNumber ? (
-                    <p className="mt-1 text-xs text-rose-300">{errors.teamNumber}</p>
-                  ) : null}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="scouterName" className={labelClasses}>
+                      Scouter Name
+                    </label>
+                    <input
+                      id="scouterName"
+                      name="scouterName"
+                      type="text"
+                      value={values.scouterName}
+                      onChange={(event) => setFieldValue('scouterName', event.target.value)}
+                      className={inputClasses}
+                      placeholder="e.g. Andy"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="teamNumber" className={labelClasses}>
+                      Team Number
+                    </label>
+                    <input
+                      id="teamNumber"
+                      name="teamNumber"
+                      type="number"
+                      value={values.teamNumber}
+                      onChange={(event) => setFieldValue('teamNumber', event.target.value)}
+                      className={inputClasses}
+                      placeholder="e.g. 1334"
+                    />
+                    {touched.teamNumber && errors.teamNumber ? (
+                      <p className="mt-1 text-xs text-rose-300">{errors.teamNumber}</p>
+                    ) : null}
+                  </div>
                 </div>
               </Section>
 
@@ -246,7 +267,7 @@ const ScoutingForm = () => {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label htmlFor="estimatedTotalPoints" className={labelClasses}>
-                      Estimated Total Points Scored
+                      Total Alliance Points Scored
                     </label>
                     <input
                       id="estimatedTotalPoints"
@@ -260,8 +281,8 @@ const ScoutingForm = () => {
                     />
                   </div>
                   <div>
-                    <span className={labelClasses}>Approx. Percent of Alliance Points</span>
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <span className={labelClasses}>Total Percent of Alliance Points</span>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {percentOptions.map((option) => {
                         const isSelected = values.pointContributionPercent === String(option);
                         return (
@@ -418,7 +439,10 @@ const ScoutingForm = () => {
                         name="shootingLocationType"
                         value="multiple"
                         checked={values.shootingLocationType === 'multiple'}
-                        onChange={() => setFieldValue('shootingLocationType', 'multiple')}
+                        onChange={() => {
+                          setFieldValue('shootingLocationType', 'multiple');
+                          setFieldValue('shootingLocationNotes', '');
+                        }}
                         className="mr-2 accent-amber-300"
                       />
                       Can score from multiple spots
@@ -426,10 +450,10 @@ const ScoutingForm = () => {
                   </div>
                 </div>
 
-                {values.shootingLocationType === 'multiple' ? (
+                {values.shootingLocationType === 'single' ? (
                   <div>
                     <label htmlFor="shootingLocationNotes" className={labelClasses}>
-                      Multiple Spot Notes
+                      One Spot Location
                     </label>
                     <input
                       id="shootingLocationNotes"
@@ -438,8 +462,11 @@ const ScoutingForm = () => {
                       value={values.shootingLocationNotes}
                       onChange={(event) => setFieldValue('shootingLocationNotes', event.target.value)}
                       className={inputClasses}
-                      placeholder="e.g. wing + centerline"
+                      placeholder="e.g. left wing"
                     />
+                    {touched.shootingLocationNotes && errors.shootingLocationNotes ? (
+                      <p className="mt-1 text-xs text-rose-300">{errors.shootingLocationNotes}</p>
+                    ) : null}
                   </div>
                 ) : null}
               </Section>

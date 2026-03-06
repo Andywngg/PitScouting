@@ -5,14 +5,10 @@ import { TeamData, teamService, getImageUrl } from '../services/api';
 
 const formatShootingType = (value: string) => {
   switch (value) {
-    case 'high_goal':
-      return 'High Goal';
-    case 'low_goal':
-      return 'Low Goal';
-    case 'fender_close':
-      return 'Close/Fender';
-    case 'long_range':
-      return 'Long Range';
+    case 'turret':
+      return 'Turret';
+    case 'fixed':
+      return 'Fixed';
     default:
       return value;
   }
@@ -20,12 +16,14 @@ const formatShootingType = (value: string) => {
 
 const formatEndgame = (value: string) => {
   switch (value) {
-    case 'high':
-      return 'High';
-    case 'low':
-      return 'Low';
-    case 'none':
-      return 'None';
+    case 'L1':
+      return 'L1';
+    case 'L2':
+      return 'L2';
+    case 'L3':
+      return 'L3';
+    case 'NA':
+      return 'NA';
     default:
       return '-';
   }
@@ -89,9 +87,10 @@ const TeamDetails = () => {
           <section className="rounded-2xl border border-slate-700/60 bg-slate-900/75 p-5 text-slate-100">
             <h2 className="text-xl font-semibold text-amber-100">Scoring Output</h2>
             <div className="mt-3 space-y-2 text-sm">
-              <p>Estimated Total Points: {showValue(team.estimatedTotalPoints)}</p>
+              <p>Scouter Name: {showValue(team.scouterName)}</p>
+              <p>Total Alliance Points Scored: {showValue(team.estimatedTotalPoints)}</p>
               <p>
-                Point Contribution: {team.pointContributionPercent ? `${team.pointContributionPercent}%` : '-'}
+                Total Percent of Alliance Points: {team.pointContributionPercent ? `${team.pointContributionPercent}%` : '-'}
               </p>
               <p>Auto Can Score Balls: {team.autoCanScoreBalls ? 'Yes' : 'No'}</p>
               <p>

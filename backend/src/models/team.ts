@@ -3,6 +3,7 @@ import { Model, DataTypes, Sequelize } from 'sequelize';
 class Team extends Model {
   public id!: number;
   public teamNumber!: number;
+  public scouterName!: string | null;
   public autoCanScoreBalls!: boolean;
   public estimatedTotalPoints!: number | null;
   public pointContributionPercent!: number | null;
@@ -34,6 +35,10 @@ class Team extends Model {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
+      },
+      scouterName: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       autoCanScoreBalls: {
         type: DataTypes.BOOLEAN,
@@ -95,7 +100,7 @@ class Team extends Model {
       },
       endgameType: {
         type: DataTypes.STRING,
-        defaultValue: 'none',
+        defaultValue: 'NA',
       },
       robotWidth: {
         type: DataTypes.FLOAT,

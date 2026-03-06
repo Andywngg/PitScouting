@@ -2,6 +2,71 @@ import { Request, Response } from 'express';
 import { Team } from '../models';
 import { Op } from 'sequelize';
 
+const parseBoolean = (value: unknown): boolean => value === true || value === 'true' || value === 1 || value === '1';
+
+const parseOptionalFloat = (value: unknown, fieldName: string): number | null => {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const parsed = parseFloat(String(value));
+  if (Number.isNaN(parsed)) {
+    throw new Error(`Invalid numeric value for ${fieldName}`);
+  }
+
+  return parsed;
+};
+
+const parseOptionalInt = (value: unknown, fieldName: string): number | null => {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const parsed = parseInt(String(value), 10);
+  if (Number.isNaN(parsed)) {
+    throw new Error(`Invalid numeric value for ${fieldName}`);
+  }
+
+  return parsed;
+};
+
+const parseStringArray = (value: unknown, fieldName: string): string[] => {
+  if (value === undefined || value === null || value === '') {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item));
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item));
+      }
+      throw new Error();
+    } catch {
+      throw new Error(`Invalid array format for ${fieldName}`);
+    }
+  }
+
+  throw new Error(`Invalid array format for ${fieldName}`);
+};
+
+const normalizeEndgameType = (value: unknown): 'L1' | 'L2' | 'L3' | 'NA' => {
+  if (value === undefined || value === null || value === '') {
+    return 'NA';
+  }
+
+  const normalized = String(value).toUpperCase();
+  if (['L1', 'L2', 'L3', 'NA'].includes(normalized)) {
+    return normalized as 'L1' | 'L2' | 'L3' | 'NA';
+  }
+
+  throw new Error('Endgame type must be one of: L1, L2, L3, NA');
+};
+
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Received team data:', JSON.stringify(req.body, null, 2));
@@ -12,53 +77,64 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
     }
 
     // Parse and validate numeric values first
-    const teamNumber = parseInt(req.body.teamNumber);
-    const robotWidth = req.body.robotWidth ? parseFloat(req.body.robotWidth) : null;
-    const robotLength = req.body.robotLength ? parseFloat(req.body.robotLength) : null;
-    const robotHeight = req.body.robotHeight ? parseFloat(req.body.robotHeight) : null;
-    const robotWeight = req.body.robotWeight ? parseFloat(req.body.robotWeight) : null;
+    const teamNumber = parseInt(req.body.teamNumber, 10);
+    const estimatedTotalPoints = parseOptionalInt(req.body.estimatedTotalPoints, 'estimatedTotalPoints');
+    const pointContributionPercent = parseOptionalInt(req.body.pointContributionPercent, 'pointContributionPercent');
+    const ballsPerCycle = parseOptionalFloat(req.body.ballsPerCycle, 'ballsPerCycle');
+    const cyclesPerMatch = parseOptionalFloat(req.body.cyclesPerMatch, 'cyclesPerMatch');
+    const maxBallCapacity = parseOptionalInt(req.body.maxBallCapacity, 'maxBallCapacity');
+    const robotWidth = parseOptionalFloat(req.body.robotWidth, 'robotWidth');
+    const robotLength = parseOptionalFloat(req.body.robotLength, 'robotLength');
+    const robotHeight = parseOptionalFloat(req.body.robotHeight, 'robotHeight');
+    const robotWeight = parseOptionalFloat(req.body.robotWeight, 'robotWeight');
+    const shootingTypes = parseStringArray(req.body.shootingTypes, 'shootingTypes');
+    const shootingLocationType = req.body.shootingLocationType || 'single';
+    const endgameType = normalizeEndgameType(req.body.endgameType);
 
     if (isNaN(teamNumber)) {
       throw new Error('Invalid team number format');
     }
 
-    // Validate numeric values
-    [robotWidth, robotLength, robotHeight, robotWeight].forEach((value, index) => {
-      if (value !== null && isNaN(value)) {
-        throw new Error(`Invalid numeric value for ${['width', 'length', 'height', 'weight'][index]}`);
-      }
-    });
-
-    let coralLevels = [];
-    try {
-      if (typeof req.body.coralLevels === 'string') {
-        coralLevels = JSON.parse(req.body.coralLevels);
-      } else if (Array.isArray(req.body.coralLevels)) {
-        coralLevels = req.body.coralLevels;
-      }
-    } catch (error) {
-      console.error('Error parsing coralLevels:', error);
-      coralLevels = [];
+    if (pointContributionPercent !== null && ![10, 20, 30, 40, 50, 60].includes(pointContributionPercent)) {
+      throw new Error('Point contribution percent must be one of: 10, 20, 30, 40, 50, 60');
     }
+
+    if (!['single', 'multiple'].includes(shootingLocationType)) {
+      throw new Error('Shooting location type must be either "single" or "multiple"');
+    }
+
+    const allowedShootingTypes = ['turret', 'fixed'];
+    const invalidShootingType = shootingTypes.find((type) => !allowedShootingTypes.includes(type));
+    if (invalidShootingType) {
+      throw new Error('Shooting types must be one of: turret, fixed');
+    }
+
+    const uploadedImagePath = req.file
+      ? ((req.file as any).path || `/uploads/${req.file.filename}`)
+      : null;
     
     const processedData = {
       teamNumber,
-      autoScoreCoral: req.body.autoScoreCoral === 'true',
-      autoScoreAlgae: req.body.autoScoreAlgae === 'true',
-      mustStartSpecificPosition: req.body.mustStartSpecificPosition === 'true',
+      scouterName: req.body.scouterName ? String(req.body.scouterName).trim() : null,
+      autoCanScoreBalls: parseBoolean(req.body.autoCanScoreBalls),
+      estimatedTotalPoints,
+      pointContributionPercent,
+      ballsPerCycle,
+      cyclesPerMatch,
+      maxBallCapacity,
+      shootingTypes,
+      shootingLocationType,
+      shootingLocationNotes: req.body.shootingLocationNotes || null,
+      mustStartSpecificPosition: parseBoolean(req.body.mustStartSpecificPosition),
       autoStartingPosition: req.body.autoStartingPosition || null,
-      teleopDealgifying: req.body.teleopDealgifying === 'true',
-      teleopPreference: req.body.teleopPreference || null,
-      scoringPreference: req.body.scoringPreference || null,
-      coralLevels,
-      endgameType: req.body.endgameType || 'none',
+      endgameType,
       robotWidth,
       robotLength,
       robotHeight,
       robotWeight,
       drivetrainType: req.body.drivetrainType || null,
       notes: req.body.notes || '',
-      imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
+      imageUrl: uploadedImagePath,
     };
 
     console.log('Processed team data:', JSON.stringify(processedData, null, 2));
@@ -129,11 +205,11 @@ export const updateTeam = async (req: Request, res: Response): Promise<Response>
 
 export const getAllTeams = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { search, drivetrain, endgameType, autoPosition, teleopPreference } = req.query;
+    const { search, drivetrain, endgameType, shootingLocationType } = req.query;
     const where: any = {};
 
-    if (search) {
-      where.teamNumber = { [Op.like]: `%${search}%` };
+    if (search && !Number.isNaN(Number(search))) {
+      where.teamNumber = Number(search);
     }
 
     if (drivetrain) {
@@ -144,12 +220,8 @@ export const getAllTeams = async (req: Request, res: Response): Promise<void> =>
       where.endgameType = endgameType;
     }
 
-    if (autoPosition) {
-      where.autoStartingPosition = autoPosition;
-    }
-
-    if (teleopPreference) {
-      where.teleopPreference = teleopPreference;
+    if (shootingLocationType) {
+      where.shootingLocationType = shootingLocationType;
     }
 
     const teams = await Team.findAll({ where });

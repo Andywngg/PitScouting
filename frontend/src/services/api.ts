@@ -21,6 +21,7 @@ api.interceptors.request.use((config) => {
 
 export interface TeamData {
   teamNumber: number;
+  scouterName: string | null;
   autoCanScoreBalls: boolean;
   estimatedTotalPoints: number | null;
   pointContributionPercent: number | null;

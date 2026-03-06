@@ -14,6 +14,10 @@ class Team extends sequelize_1.Model {
                 allowNull: false,
                 unique: true,
             },
+            scouterName: {
+                type: sequelize_1.DataTypes.STRING,
+                allowNull: true,
+            },
             autoCanScoreBalls: {
                 type: sequelize_1.DataTypes.BOOLEAN,
                 defaultValue: false,
@@ -77,7 +81,7 @@ class Team extends sequelize_1.Model {
             },
             endgameType: {
                 type: sequelize_1.DataTypes.STRING,
-                defaultValue: 'none',
+                defaultValue: 'NA',
             },
             robotWidth: {
                 type: sequelize_1.DataTypes.FLOAT,

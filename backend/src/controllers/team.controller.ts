@@ -54,6 +54,19 @@ const parseStringArray = (value: unknown, fieldName: string): string[] => {
   throw new Error(`Invalid array format for ${fieldName}`);
 };
 
+const normalizeEndgameType = (value: unknown): 'L1' | 'L2' | 'L3' | 'NA' => {
+  if (value === undefined || value === null || value === '') {
+    return 'NA';
+  }
+
+  const normalized = String(value).toUpperCase();
+  if (['L1', 'L2', 'L3', 'NA'].includes(normalized)) {
+    return normalized as 'L1' | 'L2' | 'L3' | 'NA';
+  }
+
+  throw new Error('Endgame type must be one of: L1, L2, L3, NA');
+};
+
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Received team data:', JSON.stringify(req.body, null, 2));
@@ -76,17 +89,24 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
     const robotWeight = parseOptionalFloat(req.body.robotWeight, 'robotWeight');
     const shootingTypes = parseStringArray(req.body.shootingTypes, 'shootingTypes');
     const shootingLocationType = req.body.shootingLocationType || 'single';
+    const endgameType = normalizeEndgameType(req.body.endgameType);
 
     if (isNaN(teamNumber)) {
       throw new Error('Invalid team number format');
     }
 
-    if (pointContributionPercent !== null && ![10, 20, 30, 40].includes(pointContributionPercent)) {
-      throw new Error('Point contribution percent must be one of: 10, 20, 30, 40');
+    if (pointContributionPercent !== null && ![10, 20, 30, 40, 50, 60].includes(pointContributionPercent)) {
+      throw new Error('Point contribution percent must be one of: 10, 20, 30, 40, 50, 60');
     }
 
     if (!['single', 'multiple'].includes(shootingLocationType)) {
       throw new Error('Shooting location type must be either "single" or "multiple"');
+    }
+
+    const allowedShootingTypes = ['turret', 'fixed'];
+    const invalidShootingType = shootingTypes.find((type) => !allowedShootingTypes.includes(type));
+    if (invalidShootingType) {
+      throw new Error('Shooting types must be one of: turret, fixed');
     }
 
     const uploadedImagePath = req.file
@@ -95,6 +115,7 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
     
     const processedData = {
       teamNumber,
+      scouterName: req.body.scouterName ? String(req.body.scouterName).trim() : null,
       autoCanScoreBalls: parseBoolean(req.body.autoCanScoreBalls),
       estimatedTotalPoints,
       pointContributionPercent,
@@ -106,7 +127,7 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
       shootingLocationNotes: req.body.shootingLocationNotes || null,
       mustStartSpecificPosition: parseBoolean(req.body.mustStartSpecificPosition),
       autoStartingPosition: req.body.autoStartingPosition || null,
-      endgameType: req.body.endgameType || 'none',
+      endgameType,
       robotWidth,
       robotLength,
       robotHeight,

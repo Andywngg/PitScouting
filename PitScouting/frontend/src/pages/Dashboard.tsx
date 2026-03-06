@@ -6,14 +6,10 @@ import { teamService, TeamData, getImageUrl } from '../services/api';
 
 const formatShootingType = (value: string) => {
   switch (value) {
-    case 'high_goal':
-      return 'High Goal';
-    case 'low_goal':
-      return 'Low Goal';
-    case 'fender_close':
-      return 'Close/Fender';
-    case 'long_range':
-      return 'Long Range';
+    case 'turret':
+      return 'Turret';
+    case 'fixed':
+      return 'Fixed';
     default:
       return value;
   }
@@ -21,12 +17,14 @@ const formatShootingType = (value: string) => {
 
 const formatEndgame = (value: string) => {
   switch (value) {
-    case 'high':
-      return 'High';
-    case 'low':
-      return 'Low';
-    case 'none':
-      return 'None';
+    case 'L1':
+      return 'L1';
+    case 'L2':
+      return 'L2';
+    case 'L3':
+      return 'L3';
+    case 'NA':
+      return 'NA';
     default:
       return '-';
   }
@@ -78,8 +76,9 @@ const Dashboard = () => {
   const handleExport = () => {
     const headers = [
       'Team Number',
-      'Estimated Total Points',
-      'Point Contribution Percent',
+      'Scouter Name',
+      'Total Alliance Points Scored',
+      'Total Percent of Alliance Points',
       'Balls Per Cycle',
       'Cycles Per Match',
       'Max Ball Capacity',
@@ -94,6 +93,7 @@ const Dashboard = () => {
 
     const rows = filteredTeams.map((team) => [
       team.teamNumber,
+      safeValue(team.scouterName),
       safeValue(team.estimatedTotalPoints),
       team.pointContributionPercent ? `${team.pointContributionPercent}%` : '-',
       safeValue(team.ballsPerCycle),
@@ -191,9 +191,10 @@ const Dashboard = () => {
               className="rounded-xl border border-slate-600 bg-slate-950/70 px-3 py-2 text-slate-100"
             >
               <option value="">All endgame types</option>
-              <option value="high">High</option>
-              <option value="low">Low</option>
-              <option value="none">None</option>
+              <option value="L1">L1</option>
+              <option value="L2">L2</option>
+              <option value="L3">L3</option>
+              <option value="NA">NA</option>
             </select>
           </div>
         </div>
@@ -211,10 +212,13 @@ const Dashboard = () => {
                     Team
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-300">
-                    Total Pts
+                    Scouter
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-300">
-                    %
+                    Alliance Pts
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    % Alliance
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-300">
                     Balls/Cycle
@@ -247,6 +251,7 @@ const Dashboard = () => {
                     className="cursor-pointer bg-slate-900/30 hover:bg-slate-800/70"
                   >
                     <td className="px-4 py-3 text-sm font-semibold text-amber-100">{team.teamNumber}</td>
+                    <td className="px-4 py-3 text-sm text-slate-200">{safeValue(team.scouterName)}</td>
                     <td className="px-4 py-3 text-sm text-slate-200">{safeValue(team.estimatedTotalPoints)}</td>
                     <td className="px-4 py-3 text-sm text-slate-200">
                       {team.pointContributionPercent ? `${team.pointContributionPercent}%` : '-'}
