@@ -39,5 +39,6 @@ router.post('/', upload.single('robotImage'), team_controller_1.createTeam);
 router.get('/:teamNumber', team_controller_1.getTeam);
 router.get('/', team_controller_1.getAllTeams);
 router.put('/:teamNumber', upload.single('robotImage'), team_controller_1.updateTeam);
+router.delete('/:teamNumber', team_controller_1.deleteTeam);
 exports.default = router;
 //# sourceMappingURL=teams.js.map

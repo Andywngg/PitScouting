@@ -46,7 +46,15 @@ export interface TeamData {
 export const getImageUrl = (path: string) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  return `${endpoints.teams.list.replace('/api/teams', '')}/storage${path.replace('/uploads', '')}`;
+
+  const apiBase = endpoints.teams.list.replace('/api/teams', '');
+  const normalizedPath = path.replace(/\\/g, '/').trim();
+  const cleanedPath = normalizedPath
+    .replace(/^https?:\/\/[^/]+/i, '')
+    .replace(/^\/?storage\/?/i, '')
+    .replace(/^\/?uploads\/?/i, '');
+
+  return `${apiBase}/storage/${cleanedPath}`;
 };
 
 export const teamService = {
@@ -63,5 +71,9 @@ export const teamService = {
   getAllTeams: async (): Promise<TeamData[]> => {
     const response = await api.get('/api/teams');
     return response.data;
+  },
+
+  deleteTeam: async (teamNumber: number): Promise<void> => {
+    await api.delete(`/api/teams/${teamNumber}`);
   },
 }; 

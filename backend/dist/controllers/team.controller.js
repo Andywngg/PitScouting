@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllTeams = exports.updateTeam = exports.getTeam = exports.createTeam = void 0;
+exports.getAllTeams = exports.deleteTeam = exports.updateTeam = exports.getTeam = exports.createTeam = void 0;
 const models_1 = require("../models");
 const sequelize_1 = require("sequelize");
+const path_1 = __importDefault(require("path"));
 const parseBoolean = (value) => value === true || value === 'true' || value === 1 || value === '1';
 const parseOptionalFloat = (value, fieldName) => {
     if (value === undefined || value === null || value === '') {
@@ -55,6 +59,25 @@ const normalizeEndgameType = (value) => {
     }
     throw new Error('Endgame type must be one of: L1, L2, L3, NA');
 };
+const normalizeImagePath = (file) => {
+    if (!file) {
+        return null;
+    }
+    const fileData = file;
+    const rawPath = fileData.path ? String(fileData.path) : '';
+    if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+        return rawPath;
+    }
+    if (fileData.filename) {
+        return `/uploads/${fileData.filename}`;
+    }
+    if (rawPath) {
+        const normalizedRawPath = rawPath.replace(/\\/g, '/');
+        const fileName = path_1.default.posix.basename(normalizedRawPath);
+        return fileName ? `/uploads/${fileName}` : null;
+    }
+    return null;
+};
 const createTeam = async (req, res) => {
     var _a, _b;
     try {
@@ -89,9 +112,7 @@ const createTeam = async (req, res) => {
         if (invalidShootingType) {
             throw new Error('Shooting types must be one of: turret, fixed');
         }
-        const uploadedImagePath = req.file
-            ? (req.file.path || `/uploads/${req.file.filename}`)
-            : null;
+        const uploadedImagePath = normalizeImagePath(req.file);
         const processedData = {
             teamNumber,
             scouterName: req.body.scouterName ? String(req.body.scouterName).trim() : null,
@@ -178,6 +199,26 @@ const updateTeam = async (req, res) => {
     }
 };
 exports.updateTeam = updateTeam;
+const deleteTeam = async (req, res) => {
+    try {
+        const teamNumber = parseInt(req.params.teamNumber, 10);
+        if (Number.isNaN(teamNumber)) {
+            return res.status(400).json({ error: 'Invalid team number' });
+        }
+        const deletedCount = await models_1.Team.destroy({
+            where: { teamNumber },
+        });
+        if (deletedCount === 0) {
+            return res.status(404).json({ error: 'Team not found' });
+        }
+        return res.json({ message: `Team ${teamNumber} deleted successfully` });
+    }
+    catch (error) {
+        console.error('Error deleting team:', error);
+        return res.status(500).json({ error: 'Error deleting team', details: error.message });
+    }
+};
+exports.deleteTeam = deleteTeam;
 const getAllTeams = async (req, res) => {
     try {
         const { search, drivetrain, endgameType, shootingLocationType } = req.query;

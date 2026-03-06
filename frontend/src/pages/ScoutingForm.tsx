@@ -462,7 +462,7 @@ const ScoutingForm = () => {
                       value={values.shootingLocationNotes}
                       onChange={(event) => setFieldValue('shootingLocationNotes', event.target.value)}
                       className={inputClasses}
-                      placeholder="e.g. left wing"
+                      placeholder="e.g. center"
                     />
                     {touched.shootingLocationNotes && errors.shootingLocationNotes ? (
                       <p className="mt-1 text-xs text-rose-300">{errors.shootingLocationNotes}</p>
@@ -507,7 +507,7 @@ const ScoutingForm = () => {
                       value={values.autoStartingPosition}
                       onChange={(event) => setFieldValue('autoStartingPosition', event.target.value)}
                       className={inputClasses}
-                      placeholder="e.g. right side near source"
+                      placeholder="e.g. center"
                     />
                     {touched.autoStartingPosition && errors.autoStartingPosition ? (
                       <p className="mt-1 text-xs text-rose-300">{errors.autoStartingPosition}</p>

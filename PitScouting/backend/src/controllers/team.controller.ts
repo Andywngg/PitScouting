@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Team } from '../models';
 import { Op } from 'sequelize';
+import path from 'path';
 
 const parseBoolean = (value: unknown): boolean => value === true || value === 'true' || value === 1 || value === '1';
 
@@ -67,6 +68,31 @@ const normalizeEndgameType = (value: unknown): 'L1' | 'L2' | 'L3' | 'NA' => {
   throw new Error('Endgame type must be one of: L1, L2, L3, NA');
 };
 
+const normalizeImagePath = (file: Express.Multer.File | undefined): string | null => {
+  if (!file) {
+    return null;
+  }
+
+  const fileData = file as any;
+  const rawPath = fileData.path ? String(fileData.path) : '';
+
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return rawPath;
+  }
+
+  if (fileData.filename) {
+    return `/uploads/${fileData.filename}`;
+  }
+
+  if (rawPath) {
+    const normalizedRawPath = rawPath.replace(/\\/g, '/');
+    const fileName = path.posix.basename(normalizedRawPath);
+    return fileName ? `/uploads/${fileName}` : null;
+  }
+
+  return null;
+};
+
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('Received team data:', JSON.stringify(req.body, null, 2));
@@ -109,9 +135,7 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
       throw new Error('Shooting types must be one of: turret, fixed');
     }
 
-    const uploadedImagePath = req.file
-      ? ((req.file as any).path || `/uploads/${req.file.filename}`)
-      : null;
+    const uploadedImagePath = normalizeImagePath(req.file);
     
     const processedData = {
       teamNumber,
@@ -200,6 +224,29 @@ export const updateTeam = async (req: Request, res: Response): Promise<Response>
   } catch (error: any) {
     console.error('Error updating team:', error);
     return res.status(400).json({ error: 'Error updating team', details: error.message });
+  }
+};
+
+export const deleteTeam = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const teamNumber = parseInt(req.params.teamNumber, 10);
+
+    if (Number.isNaN(teamNumber)) {
+      return res.status(400).json({ error: 'Invalid team number' });
+    }
+
+    const deletedCount = await Team.destroy({
+      where: { teamNumber },
+    });
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+
+    return res.json({ message: `Team ${teamNumber} deleted successfully` });
+  } catch (error: any) {
+    console.error('Error deleting team:', error);
+    return res.status(500).json({ error: 'Error deleting team', details: error.message });
   }
 };
 

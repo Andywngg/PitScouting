@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import { createTeam, getTeam, getAllTeams, updateTeam } from '../controllers/team.controller';
+import { createTeam, getTeam, getAllTeams, updateTeam, deleteTeam } from '../controllers/team.controller';
 
 const router = express.Router();
 
@@ -42,5 +42,6 @@ router.post('/', upload.single('robotImage'), createTeam);
 router.get('/:teamNumber', getTeam);
 router.get('/', getAllTeams);
 router.put('/:teamNumber', upload.single('robotImage'), updateTeam);
+router.delete('/:teamNumber', deleteTeam);
 
 export default router; 
