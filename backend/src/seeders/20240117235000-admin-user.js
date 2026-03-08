@@ -3,7 +3,7 @@
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-/** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     const adminEmail = process.env.ADMIN_EMAIL;

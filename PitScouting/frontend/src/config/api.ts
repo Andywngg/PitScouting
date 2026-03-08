@@ -1,17 +1,13 @@
-// Helper to get the base URL for the current environment
 const getBaseUrl = () => {
-  // If we have an explicit API URL from environment, use it
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL.replace('/api', '');
   }
   
-  // For production, use the current window location
   if (process.env.NODE_ENV === 'production') {
     const url = new URL(window.location.href);
     return `${url.protocol}//${url.host}`;
   }
   
-  // Default to localhost for development
   return 'http://localhost:5001';
 };
 

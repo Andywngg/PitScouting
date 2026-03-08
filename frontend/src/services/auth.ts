@@ -41,7 +41,6 @@ const authService = {
   getCurrentUser: (): User | null => {
     const token = localStorage.getItem('token');
     if (!token) return null;
-    // TODO: Implement token decoding or API call to get user data
     return null;
   },
 };

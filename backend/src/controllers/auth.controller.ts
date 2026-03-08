@@ -41,7 +41,6 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);
 
-    // Optional bootstrap admin credentials via environment variables.
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
     const adminName = process.env.ADMIN_NAME || 'Team 1334 Admin';

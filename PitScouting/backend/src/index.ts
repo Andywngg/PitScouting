@@ -13,7 +13,6 @@ const corsOrigin = env === 'production'
   ? process.env.FRONTEND_URL || 'https://your-frontend-url.vercel.app'
   : 'http://localhost:3000';
 
-// CORS configuration
 app.use(cors({
   origin: corsOrigin,
   credentials: true
@@ -21,20 +20,16 @@ app.use(cors({
 
 app.use(express.json());
 
-// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Serve static files from the uploads directory
 app.use('/storage', express.static(uploadsDir));
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
 
-// Root route
 app.get('/', (_req, res) => {
   res.json({ 
     message: 'Scouting App API is running',
@@ -43,7 +38,6 @@ app.get('/', (_req, res) => {
   });
 });
 
-// Database connection and server start
 sequelize.authenticate()
   .then(() => {
     console.log('Database connected successfully');

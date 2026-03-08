@@ -41,7 +41,6 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);
 
-    // Hardcoded admin credentials
     if (email === '1334admin@gmail.com' && password === 'otisit!!!') {
       const token = jwt.sign({ id: 1, isAdmin: true }, env.jwtSecret);
       return res.json({

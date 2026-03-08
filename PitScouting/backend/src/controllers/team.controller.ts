@@ -97,12 +97,10 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
   try {
     console.log('Received team data:', JSON.stringify(req.body, null, 2));
     
-    // Validate teamNumber
     if (!req.body.teamNumber) {
       throw new Error('Team number is required');
     }
 
-    // Parse and validate numeric values first
     const teamNumber = parseInt(req.body.teamNumber, 10);
     const estimatedTotalPoints = parseOptionalInt(req.body.estimatedTotalPoints, 'estimatedTotalPoints');
     const pointContributionPercent = parseOptionalInt(req.body.pointContributionPercent, 'pointContributionPercent');

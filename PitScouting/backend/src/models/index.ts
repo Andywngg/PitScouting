@@ -44,7 +44,6 @@ if ('use_env_variable' in dbConfig && dbConfig.use_env_variable) {
   );
 }
 
-// Initialize models
 User.initialize(sequelize);
 Team.initialize(sequelize);
 
