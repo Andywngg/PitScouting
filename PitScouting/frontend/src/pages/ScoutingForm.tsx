@@ -247,7 +247,9 @@ const ScoutingForm = () => {
                     <input
                       id="teamNumber"
                       name="teamNumber"
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={values.teamNumber}
                       onChange={(event) => setFieldValue('teamNumber', event.target.value)}
                       className={inputClasses}
